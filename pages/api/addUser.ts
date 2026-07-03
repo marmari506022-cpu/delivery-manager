@@ -14,11 +14,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const regionStr  = Array.isArray(regions)    ? regions.join(',')    : (regions    || '');
   const companyStr = Array.isArray(companyIds) ? companyIds.join(',') : (companyIds || '');
 
-  await supabase.from('users').insert({
+  const { error } = await supabase.from('users').insert({
     id, username, password, role: role || 'supervisor', name,
     region: regionStr, phone, supervisor_id: '', active: true,
     base_salary: baseSalary || 0, company_id: companyStr,
     admin_id: adminId,
   });
+  if (error) return res.json({ success: false, message: error.message });
   return res.json({ success: true, id });
 }

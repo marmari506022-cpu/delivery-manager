@@ -26,10 +26,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     finalCompanyId = companyId;
   }
 
-  await supabase.from('pilots').insert({
+  const { error } = await supabase.from('pilots').insert({
     id, name, region: regionStr, phone, whatsapp: whatsapp || '', supervisor_id: supId,
     base_salary: baseSalary || 0, pilot_code: code, active: true,
     created_at: nowIso(), admin_id: adminId, company_id: finalCompanyId,
   });
+  if (error) return res.json({ success: false, message: error.message });
   return res.json({ success: true, id, code });
 }
