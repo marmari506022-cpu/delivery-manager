@@ -42,6 +42,7 @@ export default function ManagerPage() {
   const [regions, setRegions] = useState<any[]>([]);
   const [companies, setCompanies] = useState<any[]>([]);
   const [allPilots, setAllPilots] = useState<any[]>([]);
+  const [pilotsLoading, setPilotsLoading] = useState(true);
   const [pilotSearch, setPilotSearch] = useState('');
   const [pilotFilterRegion, setPilotFilterRegion] = useState('');
   const [pilotFilterSup, setPilotFilterSup] = useState('');
@@ -436,8 +437,10 @@ export default function ManagerPage() {
   }
 
   async function loadAllPilots() {
+    setPilotsLoading(true);
     const res = await apiGet('getAllPilotsWithDetails');
     setAllPilots(res.data || []);
+    setPilotsLoading(false);
   }
 
   async function openSupDetail(supId: string) {
@@ -1312,7 +1315,9 @@ export default function ManagerPage() {
               </div>
 
               <div style={{overflowX:'auto'}}>
-                {allPilots.length === 0 ? <div className="spinner"></div> : (() => {
+                {pilotsLoading ? <div className="spinner"></div> : allPilots.length === 0 ? (
+                  <div style={{padding:'30px 16px',textAlign:'center',color:'var(--muted)'}}>لا يوجد طيارين</div>
+                ) : (() => {
                   const filtered = allPilots.filter((p:any) => {
                     const q = pilotSearch.trim().toLowerCase();
                     if (q && !p.name?.toLowerCase().includes(q) && !p.pilot_code?.toLowerCase().includes(q) && !p.phone?.toLowerCase().includes(q)) return false;
