@@ -10,6 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { data, error } = await supabase
     .from('companies')
     .select('*')
+    .eq('admin_id', getAdminId(session))
     .order('created_at', { ascending: false });
 
   if (error) return res.json({ success: false, message: error.message });

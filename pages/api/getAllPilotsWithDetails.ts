@@ -9,13 +9,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const adminId = getAdminId(session);
 
   const [pilotsR, supervisorsR, advR, dedR, bonR, uniR, companiesR] = await Promise.all([
-    supabase.from('pilots').select('*').eq('active', true),
-    supabase.from('users').select('*').eq('role', 'supervisor'),
-    supabase.from('advances').select('*'),
-    supabase.from('deductions').select('*'),
-    supabase.from('bonuses').select('*'),
-    supabase.from('uniforms').select('*'),
-    supabase.from('companies').select('*'),
+    supabase.from('pilots').select('*').eq('active', true).eq('admin_id', adminId),
+    supabase.from('users').select('*').eq('role', 'supervisor').eq('admin_id', adminId),
+    supabase.from('advances').select('*').eq('admin_id', adminId),
+    supabase.from('deductions').select('*').eq('admin_id', adminId),
+    supabase.from('bonuses').select('*').eq('admin_id', adminId),
+    supabase.from('uniforms').select('*').eq('admin_id', adminId),
+    supabase.from('companies').select('*').eq('admin_id', adminId),
   ]);
 
   const pilots      = pilotsR.data || [];
