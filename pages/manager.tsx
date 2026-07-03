@@ -91,13 +91,14 @@ export default function ManagerPage() {
   const [resetStep, setResetStep] = useState<'select'|'confirm-backup'|'confirm-final'>('select');
 
   // ======= إعدادات: بروفايل الأدمن =======
-  const [adminProfile, setAdminProfile] = useState(() => {
+  type AdminProfile = { name: string; username: string; phone: string };
+  const [adminProfile, setAdminProfile] = useState<AdminProfile>(() => {
     if (typeof window !== 'undefined') {
       try { const s = localStorage.getItem('badaya_admin_profile'); return s ? JSON.parse(s) : { name:'', username:'', phone:'' }; } catch {}
     }
     return { name:'', username:'', phone:'' };
   });
-  const [adminOriginalProfile, setAdminOriginalProfile] = useState(() => {
+  const [adminOriginalProfile, setAdminOriginalProfile] = useState<AdminProfile>(() => {
     if (typeof window !== 'undefined') {
       try { const s = localStorage.getItem('badaya_admin_profile'); return s ? JSON.parse(s) : { name:'', username:'', phone:'' }; } catch {}
     }
@@ -1083,7 +1084,7 @@ export default function ManagerPage() {
                         <title>{`${months[i]}: تمويل ${fmt(rawFunding[i])} — طيارون جدد ${rawPilots[i]}`}</title>
                       </circle>
                     ))}
-                    {months.map((m,i) => (
+                    {months.map((m: string, i: number) => (
                       <text key={i} x={scaleX(i)} y={H-4} textAnchor="middle" fontSize="10" fill="#94A3B8" fontFamily="Cairo">{m}</text>
                     ))}
                   </svg>
