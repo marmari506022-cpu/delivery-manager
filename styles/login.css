@@ -1,0 +1,726 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --primary:#2563EB;
+  --primary-hover:#1D4ED8;
+  --bg:#F8FAFC;
+  --white:#ffffff;
+  --text:#111827;
+  --muted:#6B7280;
+  --border:#E5E7EB;
+  --font:'Cairo',sans-serif;
+  --ease:cubic-bezier(0.16,1,0.3,1);
+  --danger:#dc2626;
+  --danger-bg:#fef2f2;
+  --danger-border:#fee2e2;
+  --success:#16a34a;
+  --success-bg:#f0fdf4;
+  --success-border:#dcfce7;
+}
+
+html { direction: rtl; overscroll-behavior-y: contain; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  min-height: calc(var(--vh, 1vh) * 100);
+  min-height: calc(var(--vh, 1vh) * 100);
+  display: flex;
+  align-items: stretch;
+  overscroll-behavior-y: contain;
+}
+
+/* ======================== LAYOUT ======================== */
+.login-page {
+  display: flex;
+  width: 100%;
+  height: calc(var(--vh, 1vh) * 100);
+  height: calc(var(--vh, 1vh) * 100);
+  max-height: calc(var(--vh, 1vh) * 100);
+  max-height: calc(var(--vh, 1vh) * 100);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ======================== RIGHT PANEL (Auth) ======================== */
+.auth-section {
+  width: 46%;
+  height: calc(var(--vh, 1vh) * 100);
+  height: calc(var(--vh, 1vh) * 100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 4vh, 80px) clamp(20px, 4%, 60px);
+  background: var(--bg);
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+}
+
+html.has-login-bg .auth-section {
+  background: transparent;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 620px;
+  max-height: 100%;
+  margin-inline: auto;
+  position: relative;
+  isolation: isolate;
+  border-radius: 28px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.12);
+  padding: clamp(24px, 5vh, 64px);
+  animation: cardIn 0.5s var(--ease);
+  overflow: hidden;
+}
+
+/* الخلفية المعتّمة (blur) اتحطت في ::before منفصل بدل ما تكون على
+   .auth-card نفسها. السبب: backdrop-filter على عنصر بيحتوي حقول
+   الإدخال بيعمل containing block/compositing layer جديد بيلخبط حساب
+   المتصفح (خصوصًا أندرويد كروم) لمكان شريط الـ Autofill فوق الكيبورد.
+   لما الـ blur يبقى على طبقة منفصلة (pseudo-element) مش أصل مباشر
+   للحقول، المتصفح بيحسب مكان الحقول والكيبورد عادي من غير ما البلور
+   يأثر، والتأثير البصري نفسه فاضل زي ما هو 100%. */
+.auth-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.28);
+  border: 1px solid rgba(255,255,255,0.4);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  border-radius: inherit;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ======================== FULL-SCREEN BACKGROUND IMAGE ======================== */
+.login-bg-image {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: calc(var(--vh, 1vh) * 100);
+  height: calc(var(--vh, 1vh) * 100);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+@keyframes cardIn {
+  from { opacity:0; transform:translateY(24px) scale(0.98); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+
+/* ======================== LOGO ======================== */
+.logo-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.logo-img {
+  width: clamp(56px, 9vh, 120px);
+  height: clamp(56px, 9vh, 120px);
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  border-radius: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(26px, 4vh, 52px);
+  box-shadow: 0 8px 32px rgba(37,99,235,0.15);
+  transition: transform 0.3s var(--ease);
+  margin-bottom: clamp(10px, 2vh, 28px);
+}
+
+.logo-img:hover { transform: scale(1.04) rotate(-2deg); }
+
+.logo-title {
+  font-size: clamp(24px, 4vh, 48px);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -1px;
+  line-height: 1.1;
+}
+
+.logo-subtitle {
+  font-size: clamp(13px, 1.8vh, 22px);
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: clamp(6px, 1.5vh, 20px);
+  line-height: 1.5;
+}
+
+/* ======================== FORM ======================== */
+.auth-form {
+  margin-top: clamp(16px, 3vh, 60px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.8vh, 24px);
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4px, 0.8vh, 10px);
+}
+
+.field-label {
+  font-size: clamp(13px, 1.4vh, 16px);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.field-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field-icon-right {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 22px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.field-icon-left {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 1;
+  background: none;
+  border: none;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.field-icon-left:hover { color: var(--primary); }
+
+.auth-input {
+  width: 100%;
+  height: clamp(42px, 6vh, 64px);
+  padding: 0 60px 0 24px;
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  background: var(--white);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: clamp(14px, 1.8vh, 18px);
+  outline: none;
+  transition: all 0.2s var(--ease);
+  -webkit-appearance: none;
+}
+
+.auth-input.has-left-icon {
+  padding-left: 56px;
+}
+
+.auth-input::placeholder { color: #9CA3AF; }
+
+.auth-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.08);
+}
+
+/* ======================== FORGOT ======================== */
+.forgot-link {
+  text-align: left;
+  margin-top: -8px;
+}
+
+.forgot-link a {
+  color: var(--primary);
+  font-size: clamp(13px, 1.6vh, 16px);
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.forgot-link a:hover { opacity: 0.75; }
+
+/* ======================== SUBMIT BUTTON ======================== */
+.submit-btn {
+  width: 100%;
+  height: clamp(42px, 6vh, 64px);
+  border: none;
+  border-radius: 16px;
+  background: var(--primary);
+  color: #fff;
+  font-family: var(--font);
+  font-size: clamp(15px, 2vh, 20px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+  box-shadow: 0 16px 32px rgba(37,99,235,0.18);
+  margin-top: 8px;
+  letter-spacing: 0.2px;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(37,99,235,0.25);
+}
+
+.submit-btn:active:not(:disabled) { transform: translateY(0); }
+.submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+
+/* ======================== BOTTOM TEXT ======================== */
+.bottom-text {
+  text-align: center;
+  margin-top: clamp(14px, 3vh, 32px);
+  font-size: clamp(13px, 1.6vh, 16px);
+  color: var(--muted);
+}
+
+.bottom-text a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+  margin-right: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.bottom-text a:hover { opacity: 0.75; }
+
+/* ======================== LEFT VISUAL SECTION ======================== */
+.visual-section {
+  width: 54%;
+  height: calc(var(--vh, 1vh) * 100);
+  background: linear-gradient(145deg, #EFF6FF 0%, #F0F9FF 40%, #FFFFFF 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 4vh, 80px);
+  position: relative;
+  border-radius: 0 0 0 32px;
+  overflow: hidden;
+}
+
+.visual-section::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  left: -120px;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37,99,235,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.visual-section::after {
+  content: '';
+  position: absolute;
+  bottom: -80px;
+  right: -80px;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.visual-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 640px;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 2vh, 20px);
+}
+
+/* Dashboard Preview Cards */
+.dash-header {
+  background: var(--white);
+  border-radius: 20px;
+  padding: clamp(14px, 2vh, 24px) clamp(16px, 2.5vh, 28px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+  border: 1px solid rgba(37,99,235,0.08);
+}
+
+.dash-title-group { display: flex; align-items: center; gap: 14px; }
+.dash-icon {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, #2563EB, #1D4ED8);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.dash-title { font-size: 18px; font-weight: 700; color: var(--text); }
+.dash-sub   { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+.dash-badge {
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Stat Cards Row */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.stat-card {
+  background: var(--white);
+  border-radius: 18px;
+  padding: clamp(14px, 2vh, 22px) 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.3s var(--ease);
+}
+
+.stat-card:hover { transform: translateY(-3px); }
+
+.stat-icon-wrap {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+
+.stat-icon-wrap.blue  { background: #EFF6FF; }
+.stat-icon-wrap.green { background: #F0FDF4; }
+.stat-icon-wrap.amber { background: #FFFBEB; }
+
+.stat-value { font-size: 26px; font-weight: 800; color: var(--text); }
+.stat-label { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+/* Chart Card */
+.chart-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: clamp(14px, 2vh, 24px) clamp(16px, 2.5vh, 28px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.chart-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: clamp(10px, 1.8vh, 18px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chart-legend {
+  font-size: 12px;
+  font-weight: 500;
+  color: #2563EB;
+  background: #EFF6FF;
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: clamp(50px, 9vh, 80px);
+}
+
+.chart-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.chart-bar {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  transition: opacity 0.3s;
+}
+
+.chart-bar.primary { background: linear-gradient(180deg, #3B82F6, #2563EB); }
+.chart-bar.light   { background: #DBEAFE; }
+
+.bar-label { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+/* Pilot Row Card */
+.pilot-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: clamp(12px, 2vh, 20px) clamp(14px, 2.4vh, 24px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 1.2vh, 12px);
+}
+
+.pilot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(6px, 1vh, 10px) 0;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.pilot-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+.pilot-info { display: flex; align-items: center; gap: 12px; }
+
+.pilot-avatar {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700;
+}
+
+.pilot-avatar.a { background: #EFF6FF; color: #2563EB; }
+.pilot-avatar.b { background: #F0FDF4; color: #16a34a; }
+.pilot-avatar.c { background: #FFF7ED; color: #EA580C; }
+
+.pilot-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.pilot-id   { font-size: 12px; color: var(--muted); }
+
+.pilot-status {
+  font-size: 12px; font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.pilot-status.active   { background: #F0FDF4; color: #16a34a; }
+.pilot-status.pending  { background: #FFFBEB; color: #D97706; }
+.pilot-status.on-leave { background: #F5F3FF; color: #7C3AED; }
+
+/* ======================== HEADER ELEMENTS ======================== */
+.page-header {
+  position: fixed;
+  top: 20px;
+  left: 40px;
+  right: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.header-btn {
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.header-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+/* ======================== ALERTS ======================== */
+.alert-box {
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.alert-error   { background:var(--danger-bg);  border:1px solid var(--danger-border);  color:var(--danger); }
+.alert-success { background:var(--success-bg); border:1px solid var(--success-border); color:var(--success); }
+
+/* ======================== MODAL ======================== */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(17,24,39,0.45);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+
+.modal {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 40px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.1);
+  animation: modalIn 0.3s var(--ease);
+}
+
+@keyframes modalIn {
+  from { opacity:0; transform:translateY(20px) scale(0.97); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+
+.modal h3 {
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.modal .field-group { margin-bottom: 0; }
+
+.btn-outline {
+  width: 100%; padding: 13px;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.2s var(--ease);
+}
+
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+.wa-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 14px; background: #25d366; border-radius: 14px;
+  color: #fff; text-decoration: none; font-weight: 700;
+  font-size: 15px; font-family: var(--font); margin: 16px 0;
+  transition: all 0.2s;
+}
+
+.wa-btn:hover { background: #22bf5b; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,211,102,0.3); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .visual-section { display: none; }
+  .auth-section { width: 100%; }
+  .page-header { left: 20px; right: 20px; }
+}
+
+/* ======================================================================
+   The dashboard pages (manager/pilot/supervisor) use a non-standard
+   `zoom` based scale trick to cram more content on small screens. That
+   `zoom` property is not supported in every mobile browser (notably
+   Safari on iOS for a long time), and manager.css applies it globally
+   to <html>/<body> the moment the app marks the device as mobile — even
+   on this login page. On browsers without `zoom` support this leaves
+   body/html forced to 142.86vw/vh with nothing to compensate, pushing
+   the login card and any fixed overlays far off-screen.
+
+   Fix: force this page back to normal, standards-based sizing whenever
+   it's the login route, with enough specificity to win over that
+   global rule regardless of zoom support.
+
+   Note: we use `100%` here, not `100vw`. `100vw` is measured including
+   the scrollbar's own width in many mobile browsers, while the actual
+   visible content area is narrower than that.
+
+   We also force `overflow:hidden` on both html and body here. Some
+   mobile browsers (Chrome/Android in particular) render the vertical
+   scrollbar on the LEFT edge instead of the right when the page is
+   RTL. If the content's real height is even a pixel taller than the
+   viewport, that scrollbar appears and eats into the left side only —
+   which visually reads as the centered card being nudged to the right.
+   The login page's height is already pinned to `var(--vh)*100`
+   (the real, JS-measured visible viewport height), so no vertical
+   scroll should ever be needed here; forcing `overflow:hidden` just
+   guarantees no scrollbar can appear to cause that asymmetry.
+   ====================================================================== */
+html.login-view,
+html.is-mobile.login-view {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+html.login-view body,
+html.is-mobile.login-view body {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: calc(var(--vh, 1vh) * 100) !important;
+  min-height: calc(var(--vh, 1vh) * 100) !important;
+  overflow: hidden !important;
+}
+
+/* While the on-screen keyboard is open, drop the hard overflow:hidden
+   lock above. With it in place the page can never scroll, so the browser
+   has no way to bring the focused input above the keyboard — it (and any
+   native UI the browser anchors to it, like an autofill suggestion bar)
+   just stays wherever it was laid out with the keyboard closed, which is
+   why it can end up floating mid-screen instead of docked to the
+   keyboard. Letting the page scroll here restores that native behavior;
+   overflow:hidden goes back the instant the keyboard closes. */
+html.login-view.keyboard-open,
+html.is-mobile.login-view.keyboard-open {
+  overflow: auto !important;
+}
+html.login-view.keyboard-open body,
+html.is-mobile.login-view.keyboard-open body {
+  overflow: auto !important;
+  height: auto !important;
+}
+html.login-view .login-page,
+html.is-mobile.login-view .login-page {
+  height: calc(var(--vh, 1vh) * 100) !important;
+  height: calc(var(--vh, 1vh) * 100) !important;
+  max-height: calc(var(--vh, 1vh) * 100) !important;
+  max-height: calc(var(--vh, 1vh) * 100) !important;
+}
+html.login-view .auth-section,
+html.is-mobile.login-view .auth-section {
+  height: calc(var(--vh, 1vh) * 100) !important;
+  height: calc(var(--vh, 1vh) * 100) !important;
+}
+
+html.login-view.keyboard-open .login-page,
+html.is-mobile.login-view.keyboard-open .login-page {
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+}
+html.login-view.keyboard-open .auth-section,
+html.is-mobile.login-view.keyboard-open .auth-section {
+  height: auto !important;
+  min-height: calc(var(--vh, 1vh) * 100) !important;
+  overflow: visible !important;
+}
