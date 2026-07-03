@@ -3,7 +3,7 @@ export const ROLE_KEY     = 'badaya_role';
 export const PILOT_ID_KEY = 'badaya_pilotId';
 
 // Cache version — increment this to bust all cached data when API response shapes change
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 
 // Auto-clear old cache on version mismatch
 if (typeof window !== 'undefined') {
