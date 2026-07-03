@@ -438,9 +438,14 @@ export default function ManagerPage() {
 
   async function loadAllPilots() {
     setPilotsLoading(true);
-    const res = await apiGet('getAllPilotsWithDetails');
-    setAllPilots(res.data || []);
-    setPilotsLoading(false);
+    try {
+      const res = await apiGet('getAllPilotsWithDetails');
+      setAllPilots(res?.success ? (res.data || []) : []);
+    } catch {
+      setAllPilots([]);
+    } finally {
+      setPilotsLoading(false);
+    }
   }
 
   async function openSupDetail(supId: string) {
