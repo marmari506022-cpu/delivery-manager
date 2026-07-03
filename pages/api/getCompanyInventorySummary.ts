@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const adminId = getAdminId(session);
   const companyId = req.query.companyId as string || '';
 
-  const { data: companies } = await supabase.from('companies').select('*').eq('active', true);
+  const { data: companies } = await supabase.from('companies').select('*').eq('active', true).eq('admin_id', adminId);
 
   let invQuery = supabase.from('inventory').select('*').eq('admin_id', adminId);
   if (companyId) invQuery = invQuery.eq('company_id', companyId);

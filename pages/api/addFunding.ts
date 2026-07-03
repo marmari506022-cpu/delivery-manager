@@ -9,8 +9,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { supervisorId, amount, note, isRequest, requestId, originalAmount } = req.body;
 
+  const adminId = getAdminId(session);
   // فحص الرصيد
-  const { data: balData } = await supabase.from('balance').select('*');
+  const { data: balData } = await supabase.from('balance').select('*').eq('admin_id', adminId);
   const inTotal  = (balData || []).filter(b => b.direction === 'in').reduce((s, b) => s + (Number(b.amount) || 0), 0);
   const outTotal = (balData || []).filter(b => b.direction === 'out').reduce((s, b) => s + (Number(b.amount) || 0), 0);
   const balance  = inTotal - outTotal;
@@ -18,7 +19,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (balance < amount) return res.json({ success: false, message: `الرصيد غير كافٍ - الرصيد الحالي: ${balance}` });
 
   const origAmt = originalAmount !== undefined ? originalAmount : amount;
-  const adminId = getAdminId(session);
   await supabase.from('funding').insert({
     id: generateId(), supervisor_id: supervisorId, amount, date: nowIso(),
     sent_by: session.name, note: note || '', is_request: isRequest || false,

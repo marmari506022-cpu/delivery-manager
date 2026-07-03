@@ -15,6 +15,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // تقفيل طيار واحد محدد فقط
   if (!pilotId) return res.json({ success: false, message: 'pilotId مطلوب' });
 
+  const { data: pilotRows } = await supabase.from('pilots').select('id,supervisor_id').eq('id', pilotId).limit(1);
+  if (!pilotRows?.[0] || pilotRows[0].supervisor_id !== session.id) {
+    return res.json({ success: false, message: 'غير مصرح' });
+  }
+
   const [advR, dedR, bonR, uniR] = await Promise.all([
     supabase.from('advances').select('*').eq('pilot_id', pilotId).eq('settled', false).eq('deleted', false),
     supabase.from('deductions').select('*').eq('pilot_id', pilotId).eq('settled', false).eq('deleted', false),

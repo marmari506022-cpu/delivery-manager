@@ -10,6 +10,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { pilotId, dateKey } = req.body;
   if (!pilotId || !dateKey) return res.json({ success: false, message: 'بيانات ناقصة' });
 
+  const { data: pilotRows } = await supabase.from('pilots').select('id,supervisor_id').eq('id', pilotId).limit(1);
+  if (!pilotRows?.[0] || pilotRows[0].supervisor_id !== session.id) {
+    return res.json({ success: false, message: 'غير مصرح' });
+  }
+
   const { data } = await supabase
     .from('settled')
     .select('*')

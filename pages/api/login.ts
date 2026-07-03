@@ -51,6 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .from('pilots')
       .select('id')
       .eq('active', true)
+      .eq('admin_id', user.admin_id || '')
       .or(`phone.eq.${user.phone},name.eq.${user.name}`)
       .limit(1);
     pilotId = pilots?.[0]?.id || '';

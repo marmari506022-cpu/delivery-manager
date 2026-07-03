@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../lib/supabase';
-import { getSession } from '../../lib/auth';
+import { getSession, getAdminId } from '../../lib/auth';
 
 // الجداول التي يمكن للأدمن حذفها (لا تشمل بيانات المشرفين الخاصة)
 // الجداول التي يمكن للأدمن حذفها فقط
@@ -57,6 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!session || session.role !== 'manager') return res.json({ success: false, message: 'غير مصرح' });
 
   const { tables } = req.body as { tables: string[] };
+  const adminId = getAdminId(session);
 
   if (!tables || !Array.isArray(tables) || tables.length === 0) {
     return res.json({ success: false, message: 'يجب تحديد جداول للحذف' });
@@ -77,21 +78,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   for (const table of tables) {
     try {
       if (table === 'equipment_types') {
-        // حذف الأنواع المضافة فقط مع الإبقاء على الأنواع الأصلية
+        // حذف الأنواع المضافة فقط (لنفس الأدمن) مع الإبقاء على الأنواع الأصلية
         const { error } = await supabase
           .from('equipment_types')
           .delete()
+          .eq('admin_id', adminId)
           .not('key', 'in', '("pouch","tshirt","jacket","cap","helmet")');
-        // إعادة تفعيل الأنواع الأصلية لو كانت معطلة
+        // إعادة تفعيل الأنواع الأصلية لو كانت معطلة (لنفس الأدمن)
         await supabase.from('equipment_types').update({ active: true })
+          .eq('admin_id', adminId)
           .in('key', ['pouch', 'tshirt', 'jacket', 'cap', 'helmet']);
         if (!error) deleted.push(table);
         else errors.push(table);
       } else {
-        // حذف كل سجلات الجدول
+        // حذف سجلات الأدمن الحالي فقط من الجدول
         const { error } = await (supabase.from(table as any) as any)
           .delete()
-          .neq('id', 'IMPOSSIBLE_MATCH_____');
+          .eq('admin_id', adminId);
         if (!error) deleted.push(table);
         else errors.push(table);
       }

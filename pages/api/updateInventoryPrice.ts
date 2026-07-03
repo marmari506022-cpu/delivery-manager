@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../lib/supabase';
-import { getSession } from '../../lib/auth';
+import { getSession, getAdminId } from '../../lib/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (newProfitMargin !== undefined && newProfitMargin !== null) updates.profit_margin = newProfitMargin;
   if (newProfitType) updates.profit_type = newProfitType;
 
-  const { error } = await supabase.from('inventory').update(updates).eq('batch_id', batchId).eq('direction', 'manager_in');
+  const { error } = await supabase.from('inventory').update(updates).eq('batch_id', batchId).eq('direction', 'manager_in').eq('admin_id', getAdminId(session));
   if (error) return res.json({ success: false, message: error.message });
   return res.json({ success: true });
 }

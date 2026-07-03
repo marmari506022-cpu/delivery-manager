@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../lib/supabase';
-import { getSession } from '../../lib/auth';
+import { getSession, getAdminId } from '../../lib/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = getSession(req);
@@ -10,6 +10,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { data: pilots } = await supabase.from('pilots').select('*').eq('id', pilotId).limit(1);
   const pilot = pilots?.[0];
   if (!pilot) return res.json({ success: false, message: 'الطيار غير موجود' });
+
+  if (session.role === 'supervisor' && pilot.supervisor_id !== session.id) {
+    return res.json({ success: false, message: 'غير مصرح' });
+  }
+  if (session.role === 'manager' && pilot.admin_id !== getAdminId(session)) {
+    return res.json({ success: false, message: 'غير مصرح' });
+  }
 
   const [advR, dedR, bonR, uniR] = await Promise.all([
     supabase.from('advances').select('*').eq('pilot_id', pilotId),

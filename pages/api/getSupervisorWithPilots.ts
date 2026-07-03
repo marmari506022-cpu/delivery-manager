@@ -1,18 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../lib/supabase';
-import { getSession } from '../../lib/auth';
+import { getSession, getAdminId } from '../../lib/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = getSession(req);
   if (!session || session.role !== 'manager') return res.json({ success: false, message: 'غير مصرح' });
 
+  const adminId = getAdminId(session);
   const supervisorId = (req.query.supervisorId || req.body?.supervisorId) as string;
   const [usersR, companiesR] = await Promise.all([
     supabase.from('users').select('*').eq('id', supervisorId).limit(1),
-    supabase.from('companies').select('*'),
+    supabase.from('companies').select('*').eq('admin_id', adminId),
   ]);
   const sup = usersR.data?.[0];
   if (!sup) return res.json({ success: false, message: 'المشرف غير موجود' });
+  if (sup.admin_id !== adminId) return res.json({ success: false, message: 'غير مصرح' });
   const allCompanies = companiesR.data || [];
   const supRegions    = (sup.region || '').split(',').map((r: string) => r.trim()).filter(Boolean);
   const supCompanyIds = (sup.company_id || '').split(',').map((c: string) => c.trim()).filter(Boolean);
@@ -21,10 +23,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const [pilotsR, advR, dedR, bonR, uniR, salR, fundR] = await Promise.all([
     supabase.from('pilots').select('*').eq('supervisor_id', supervisorId).eq('active', true),
-    supabase.from('advances').select('*'),
-    supabase.from('deductions').select('*'),
-    supabase.from('bonuses').select('*'),
-    supabase.from('uniforms').select('*'),
+    supabase.from('advances').select('*').eq('admin_id', adminId),
+    supabase.from('deductions').select('*').eq('admin_id', adminId),
+    supabase.from('bonuses').select('*').eq('admin_id', adminId),
+    supabase.from('uniforms').select('*').eq('admin_id', adminId),
     supabase.from('manager_salary').select('*').eq('supervisor_id', supervisorId).eq('settled', false),
     supabase.from('funding').select('*').eq('supervisor_id', supervisorId).order('date', { ascending: false }),
   ]);

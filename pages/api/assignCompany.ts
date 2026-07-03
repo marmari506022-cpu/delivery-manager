@@ -1,12 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../lib/supabase';
-import { getSession } from '../../lib/auth';
+import { getSession, getAdminId } from '../../lib/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
   const session = getSession(req);
   if (!session || session.role !== 'manager') return res.json({ success: false, message: 'غير مصرح' });
 
+  const adminId = getAdminId(session);
   const { targetId, targetType, companyId, action } = req.body;
   // targetType: 'supervisor' | 'pilot'
   // action (supervisor only): 'add' | 'remove' | 'set' (default: 'set' for backward compat)
@@ -15,7 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (targetType === 'supervisor') {
     if (action === 'add' || action === 'remove') {
       // Multi-company: toggle
-      const { data: users } = await supabase.from('users').select('company_id').eq('id', targetId).limit(1);
+      const { data: users } = await supabase.from('users').select('company_id,admin_id').eq('id', targetId).limit(1);
+      if (!users?.[0] || users[0].admin_id !== adminId) return res.json({ success: false, message: 'غير مصرح' });
       const current = (users?.[0]?.company_id || '').split(',').map((c: string) => c.trim()).filter(Boolean);
       let updated: string[];
       if (action === 'add') {
@@ -23,15 +25,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } else {
         updated = current.filter((c: string) => c !== companyId);
       }
-      const { error } = await supabase.from('users').update({ company_id: updated.join(',') }).eq('id', targetId);
+      const { error } = await supabase.from('users').update({ company_id: updated.join(',') }).eq('id', targetId).eq('admin_id', adminId);
       if (error) return res.json({ success: false, message: error.message });
     } else {
       // Legacy: set single
-      const { error } = await supabase.from('users').update({ company_id: companyId || '' }).eq('id', targetId);
+      const { error } = await supabase.from('users').update({ company_id: companyId || '' }).eq('id', targetId).eq('admin_id', adminId);
       if (error) return res.json({ success: false, message: error.message });
     }
   } else if (targetType === 'pilot') {
-    const { error } = await supabase.from('pilots').update({ company_id: companyId || '' }).eq('id', targetId);
+    const { error } = await supabase.from('pilots').update({ company_id: companyId || '' }).eq('id', targetId).eq('admin_id', adminId);
     if (error) return res.json({ success: false, message: error.message });
   } else {
     return res.json({ success: false, message: 'نوع غير صحيح' });

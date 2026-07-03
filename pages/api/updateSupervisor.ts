@@ -1,12 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../lib/supabase';
-import { getSession } from '../../lib/auth';
+import { getSession, getAdminId } from '../../lib/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
   const session = getSession(req);
   if (!session || session.role !== 'manager') return res.json({ success: false, message: 'غير مصرح' });
 
+  const adminId = getAdminId(session);
   const { supervisorId, name, phone, regions, companyIds, baseSalary } = req.body;
   if (!supervisorId) return res.json({ success: false, message: 'معرف المشرف مطلوب' });
 
@@ -27,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     updates.company_id = arr.join(',');
   }
 
-  const { error } = await supabase.from('users').update(updates).eq('id', supervisorId);
+  const { error } = await supabase.from('users').update(updates).eq('id', supervisorId).eq('admin_id', adminId);
   if (error) return res.json({ success: false, message: error.message });
   return res.json({ success: true });
 }

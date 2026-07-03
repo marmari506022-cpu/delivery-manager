@@ -8,10 +8,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!session) return res.json({ success: false, message: 'غير مصرح' });
 
   const { pilotId, excludeAdvances, excludeUniforms } = req.body;
+  const adminId = getAdminId(session);
+  const { data: pilotRows } = await supabase.from('pilots').select('id,supervisor_id,admin_id').eq('id', pilotId).limit(1);
+  const pilotRow = pilotRows?.[0];
+  if (!pilotRow) return res.json({ success: false, message: 'الطيار غير موجود' });
+  if (session.role === 'supervisor' && pilotRow.supervisor_id !== session.id)
+    return res.json({ success: false, message: 'غير مصرح' });
+  if (session.role === 'manager' && pilotRow.admin_id !== adminId)
+    return res.json({ success: false, message: 'غير مصرح' });
   const excludeAdvIds = excludeAdvances || [];
   const excludeUniIds = excludeUniforms || [];
   const timestamp = nowIso();
-  const adminId = getAdminId(session);
   const settled: any[] = [];
   const settledRows: any[] = [];
 

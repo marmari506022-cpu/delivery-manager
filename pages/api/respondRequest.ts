@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // Approved: execute inventory movement
   if (item.type === 'funding') {
-    const { data: balData } = await supabase.from('balance').select('*');
+    const { data: balData } = await supabase.from('balance').select('*').eq('admin_id', adminId);
     const inT  = (balData || []).filter((b: any) => b.direction === 'in').reduce((s: number, b: any) => s + (Number(b.amount) || 0), 0);
     const outT = (balData || []).filter((b: any) => b.direction === 'out').reduce((s: number, b: any) => s + (Number(b.amount) || 0), 0);
     if (inT - outT < finalAmount)
@@ -40,11 +40,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await supabase.from('funding').insert({
       id: generateId(), supervisor_id: item.supervisor_id, amount: finalAmount, date: nowIso(),
       sent_by: session.name, note: 'طلب مشرف مُعتمد', is_request: true,
-      request_id: requestId, original_amount: originalAmount,
+      request_id: requestId, original_amount: originalAmount, admin_id: adminId,
     });
     await supabase.from('balance').insert({
       id: generateId(), amount: finalAmount, date: nowIso(), note: 'تمويل مشرف',
-      direction: 'out', created_by: session.name,
+      direction: 'out', created_by: session.name, admin_id: adminId,
     });
 
     await supabase.from('requests').update({ amount: finalAmount, qty: finalQty, status }).eq('id', requestId);

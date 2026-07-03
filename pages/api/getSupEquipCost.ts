@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../lib/supabase';
-import { getSession } from '../../lib/auth';
+import { getSession, getAdminId } from '../../lib/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = getSession(req);
@@ -8,6 +8,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const supervisorId = req.query.supervisorId as string;
   if (!supervisorId) return res.json({ success: false, message: 'supervisorId مطلوب' });
+
+  const { data: supRows } = await supabase.from('users').select('id,admin_id').eq('id', supervisorId).limit(1);
+  if (!supRows?.[0] || supRows[0].admin_id !== getAdminId(session)) {
+    return res.json({ success: false, message: 'غير مصرح' });
+  }
 
   const { data } = await supabase
     .from('inventory')

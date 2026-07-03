@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../lib/supabase';
-import { getSession } from '../../lib/auth';
+import { getSession, getAdminId } from '../../lib/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = getSession(req);
@@ -8,6 +8,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const pilotId = req.query.pilotId as string;
   if (!pilotId) return res.json({ success: false, message: 'pilotId مطلوب' });
+
+  const { data: pilotRows } = await supabase.from('pilots').select('id,supervisor_id,admin_id').eq('id', pilotId).limit(1);
+  const pilotRow = pilotRows?.[0];
+  if (!pilotRow) return res.json({ success: false, message: 'الطيار غير موجود' });
+  if (session.role === 'supervisor' && pilotRow.supervisor_id !== session.id)
+    return res.json({ success: false, message: 'غير مصرح' });
+  if (session.role === 'manager' && pilotRow.admin_id !== getAdminId(session))
+    return res.json({ success: false, message: 'غير مصرح' });
 
   const { data } = await supabase
     .from('settled')

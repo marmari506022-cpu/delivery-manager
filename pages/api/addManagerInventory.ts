@@ -20,8 +20,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.json({ success: false, message: 'السعر غير صحيح' });
   }
 
-  // جلب اسم الشركة
-  const { data: companyData } = await supabase.from('companies').select('name').eq('id', companyId).limit(1);
+  // جلب اسم الشركة والتحقق من ملكيتها
+  const { data: companyData } = await supabase.from('companies').select('name,admin_id').eq('id', companyId).limit(1);
+  if (!companyData?.[0] || companyData[0].admin_id !== adminId) {
+    return res.json({ success: false, message: 'الشركة غير موجودة' });
+  }
   const companyName = companyData?.[0]?.name || '';
 
   const batchId = generateId();

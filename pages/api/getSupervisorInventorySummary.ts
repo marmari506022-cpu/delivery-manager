@@ -9,6 +9,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const adminId = getAdminId(session);
   const supId = (req.query.supervisorId || req.body?.supervisorId || session.id) as string;
+  if (session.role === 'manager' && supId !== session.id) {
+    const { data: supRows } = await supabase.from('users').select('id,admin_id').eq('id', supId).limit(1);
+    if (!supRows?.[0] || supRows[0].admin_id !== adminId) {
+      return res.json({ success: false, message: 'غير مصرح' });
+    }
+  } else if (session.role === 'supervisor' && supId !== session.id) {
+    return res.json({ success: false, message: 'غير مصرح' });
+  }
   const { data: inv } = await supabase.from('inventory').select('*').eq('supervisor_id', supId);
   const types = await getAllTypes(adminId);
   const summary: Record<string, any> = {};

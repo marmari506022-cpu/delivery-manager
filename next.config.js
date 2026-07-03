@@ -9,11 +9,19 @@ const withPWA = require('@ducanh2912/next-pwa').default({
       handler: 'NetworkOnly',
     },
     {
+      urlPattern: /^https?.*\/_next\/static\/.*/,
+      handler: 'StaleWhileRevalidate',
+      options: {
+        cacheName: 'badaya-static-cache',
+        expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 },
+      },
+    },
+    {
       urlPattern: /^https?.*/,
       handler: 'NetworkFirst',
       options: {
-        cacheName: 'badaya-api-cache',
-        expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 },
+        cacheName: 'badaya-pages-cache',
+        expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 },
         networkTimeoutSeconds: 10,
       },
     },
