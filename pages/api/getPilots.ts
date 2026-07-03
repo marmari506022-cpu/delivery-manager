@@ -7,18 +7,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!session) return res.json({ success: false, message: 'غير مصرح' });
 
   const supervisorId = req.query.supervisorId as string || req.body?.supervisorId || '';
+  const adminId = getAdminId(session);
+  if (!adminId) return res.json({ success: true, data: [] });
 
   let query = supabase.from('pilots').select('*').eq('active', true);
 
   if (supervisorId) {
     // المدير بيطلب طيارين مشرف معين → فلتر بالاتنين
-    query = query.eq('supervisor_id', supervisorId).eq('admin_id', getAdminId(session));
+    query = query.eq('supervisor_id', supervisorId).eq('admin_id', adminId);
   } else if (session.role === 'supervisor') {
-    // المشرف → فلتر بـ supervisor_id بس (بدون admin_id عشان يضمن يلاقي بياناته)
-    query = query.eq('supervisor_id', session.id);
+    // المشرف → فلتر بـ supervisor_id و admin_id مع بعض
+    query = query.eq('supervisor_id', session.id).eq('admin_id', adminId);
   } else {
     // المدير → فلتر بـ admin_id بس
-    query = query.eq('admin_id', getAdminId(session));
+    query = query.eq('admin_id', adminId);
   }
 
   const { data } = await query;

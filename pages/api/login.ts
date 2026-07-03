@@ -14,6 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .select('*')
     .eq('username', username)
     .eq('active', true)
+    .order('id', { ascending: true })
     .limit(1);
 
   const user = users?.[0];

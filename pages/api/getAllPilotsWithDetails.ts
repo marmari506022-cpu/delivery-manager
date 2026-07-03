@@ -7,6 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!session || session.role !== 'manager') return res.json({ success: false, message: 'غير مصرح' });
 
   const adminId = getAdminId(session);
+  if (!adminId) return res.json({ success: true, data: [] });
 
   const [pilotsR, supervisorsR, advR, dedR, bonR, uniR, companiesR] = await Promise.all([
     supabase.from('pilots').select('*').eq('active', true).eq('admin_id', adminId),
