@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const adminId = getAdminId(session);
   if (!adminId) return res.json({ success: false, message: 'غير مصرح' });
   const { name, region, phone, whatsapp, baseSalary, supervisorId: bodySupervisorId, companyId } = req.body;
-  const { count } = await supabase.from('pilots').select('*', { count: 'exact', head: true }).eq('admin_id', adminId);
+  const { count } = await supabase.from('pilots').select('*', { count: 'exact', head: true });
   const code  = 'P' + String((count || 0) + 1).padStart(4, '0');
   const id    = generateId();
   const supId = session.role === 'supervisor' ? session.id : (bodySupervisorId || '');
